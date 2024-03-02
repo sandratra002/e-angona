@@ -1,4 +1,5 @@
 {
+    "driver" : "ODBC Driver 17 for SQL Server",
     "server" : "Sandratra",
     "username" : "Aina",
     "password" : "aina",
