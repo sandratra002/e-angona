@@ -1,4 +1,13 @@
-import pyodbc
+from models.church_group import ChurchGroup
+from models.sql_connection import SQLConnection
 
-connectionString = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=Sandratra;DATABASE=e-angona;UID=Aina;PWD=aina'
-conn = pyodbc.connect(connectionString)
+try :
+    church_group = ChurchGroup(name="Andoharanofotsy", id="CHG0001")
+    datas = church_group.read()
+    for data in datas : print(data.name)
+    data = church_group.read_by_id()
+    print(data.id)
+    church_group.update()
+    church_group.delete()
+except RuntimeError as err:
+    print(err)  
