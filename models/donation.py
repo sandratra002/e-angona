@@ -8,5 +8,5 @@ class Donation (DatabaseManager) :
         self.id = id
         self.church_id = church_id
         self.amount = amount
-        self.sunday_id = None
+        self.sunday_id = sunday_id
         self.date = date

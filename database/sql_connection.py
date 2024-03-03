@@ -1,5 +1,4 @@
 import pyodbc
-import json
 
 class SQLConnection:
     @staticmethod

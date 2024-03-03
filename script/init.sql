@@ -48,10 +48,24 @@ CREATE TABLE [donation] (
     [church_id] nvarchar(10),
     [amount] DECIMAL(10, 2),
     CHECK ([amount] > 0),
-    [date] DATE NOT NULL
+    [date] DATE NOT NULL,
+    [sunday_id] INT NOT NULL
 );
 
 ALTER TABLE [donation]
 ADD CONSTRAINT [donation_church_fk_check] FOREIGN KEY ([church_id])
+REFERENCES [church]([id])
+ON DELETE CASCADE;
+
+CREATE TABLE [fund] (
+    [id] nvarchar(10) PRIMARY KEY DEFAULT (N'FUN' + RIGHT(REPLICATE(N'0', 4) + CONVERT(nvarchar(10), NEXT VALUE FOR [fund_sequence]), 4)),
+    [church_id] nvarchar(10),
+    [date] DATE NOT NULL,
+    [amount] DECIMAL(10, 2),
+    CHECK ([amount] > 0)
+);
+
+ALTER TABLE [fund]
+ADD CONSTRAINT [fund_church_fk_check] FOREIGN KEY ([church_id])
 REFERENCES [church]([id])
 ON DELETE CASCADE;
