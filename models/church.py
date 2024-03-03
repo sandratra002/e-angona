@@ -13,8 +13,9 @@ class Church (DatabaseManager):
     def get_fund(self, year : int, sunday_id : int) -> float:
         try :
             with self._connection.cursor() as cursor:
-                query = f"SELECT SUM(amount) FROM Donation WHERE church_id = {self.id} AND YEAR(date) = {year} AND sunday_id < {sunday_id}"
+                query = f"SELECT SUM(amount) FROM Donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year} AND sunday_id < {sunday_id}"
                 cursor.execute(query)  
                 return cursor.fetchmany(1)
         except Exception as e :
             raise e 
+    
