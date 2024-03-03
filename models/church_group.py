@@ -1,4 +1,4 @@
-from models.db_manager import DatabaseManager
+from database.db_manager import DatabaseManager
 
 class ChurchGroup (DatabaseManager) :
     def __init__(self, id = None, name = None) -> None:

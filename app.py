@@ -1,5 +1,5 @@
 from models.church_group import ChurchGroup
-from models.sql_connection import SQLConnection
+from database.sql_connection import SQLConnection
 
 try :
     church_group = ChurchGroup(name="Andoharanofotsy", id="CHG0001")
