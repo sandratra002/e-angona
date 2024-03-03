@@ -1,13 +1,7 @@
-from models.church_group import ChurchGroup
-from database.sql_connection import SQLConnection
+from models.church import Church
 
 try :
-    church_group = ChurchGroup(name="Andoharanofotsy", id="CHG0001")
-    datas = church_group.read()
-    for data in datas : print(data.name)
-    data = church_group.read_by_id()
-    print(data.id)
-    church_group.update()
-    church_group.delete()
-except RuntimeError as err:
-    print(err)  
+    church = Church(name="Eglise Catholique Malaza", church_group_id="CHG0001")
+    church.create()
+except Exception as e:
+    print(e)  
