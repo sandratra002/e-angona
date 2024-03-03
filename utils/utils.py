@@ -13,3 +13,11 @@ def get_sunday_id_int(date):
   date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
   if(date.weekday() != 6) : raise Exception("The date is not sunday")
   return date.isocalendar().week
+
+def calculate_proportion(num1, num2):
+  if num2 == 0:
+    return 0  
+
+  proportion = ((num1 / num2) * 100) - 100  
+  return round(proportion, 2)  
+

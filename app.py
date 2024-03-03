@@ -4,9 +4,8 @@ import datetime
 
 try :
     church = Church(id="CHU0001")
-    data1 = church.get_fund(year=2023, sunday_id=8)
-    data2 = church.get_fund(year=2024, sunday_id=8)
-    print(data1)
-    print(data2)
+    datas = church.get_donations(year=2023)
+    for data in datas :
+        print(data.amount)
 except Exception as e:      
     print(e)  
