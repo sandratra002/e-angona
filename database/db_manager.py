@@ -1,4 +1,4 @@
-from models.sql_connection import SQLConnection as conn
+from database.sql_connection import SQLConnection as conn
 from utils.string_utilities import to_snake_case
 
 class DatabaseManager:
@@ -36,7 +36,8 @@ class DatabaseManager:
             cursor.execute(sql)
 
             data = [self.__class__(*row) for row in cursor.fetchmany(1)]
-        return data[0]
+        if len(data) > 0 : return data[0] 
+        return None
     
     def update(self):
         with self._connection.cursor() as cursor:
