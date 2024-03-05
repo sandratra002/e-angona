@@ -14,4 +14,8 @@ class Donation (DatabaseManager) :
         
     @property
     def date (self) :
-        return datetime.strptime(self.date)
+        return self.date
+    
+    @date.setter 
+    def date (self, value) :
+        self.date = datetime.strptime(value, "%Y-%m-%d")

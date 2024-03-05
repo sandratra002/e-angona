@@ -15,9 +15,15 @@ class Believer(DatabaseManager) :
         self.integration_date = integration_date
         pass
     
-    @property
-    def integration_date (self) :
-        return datetime.strptime(self.integration_date)
-        
+    # Class methods
     def request_loan (self, date, amount) :
         return Loan(request_date=date, amount=amount, believer_id=self.id)
+    
+    # Getters and setters
+    @property
+    def integration_date (self) :
+        return self.integration_date
+    
+    @integration_date.setter 
+    def integration_date (self, value) :
+        self.integration_date = datetime.strptime(value, "%Y-%m-%d")
