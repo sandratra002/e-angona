@@ -1,9 +1,8 @@
 from database.db_manager import DatabaseManager
-from utils.utils import calculate_proportion, get_sunday_date
+from utils.utils import calculate_proportion, get_sunday_date, get_sunday_id_int, get_week_day_id
 from models.donation import Donation
 from models.loan import Loan
 from models.fund import Fund
-from copy import deepcopy
 
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
@@ -27,13 +26,16 @@ class Church (DatabaseManager):
         except Exception as e :
             raise e 
         
-    def get_fund_at (self, date) :
+    def get_fund_at (self, date, first_time = False) :
         # Get fund for a specific date
         try :
             with self._connection.cursor() as cursor:
-                query = f"SELECT * FROM fund WHERE church_id = \'{self.id}\' AND date = \'{date}\'"
+                if not first_time : query = f"SELECT * FROM fund WHERE church_id = \'{self.id}\' AND date = \'{date}\'"
+                else : query = f"SELECT SUM(amount) FROM donation WHERE church_id = \'{self.id}\' AND date <= \'{date}\' AND YEAR(date) = {date.year}"
                 cursor.execute(query)  
-                return Fund().__class__(cursor.fetchmany(1)[0][0])
+                if not first_time :
+                    return Fund().__class__(cursor.fetchmany(1)[0][0])
+                else : return Fund(amount=cursor.fetchone()[0])
         except Exception as e :
             raise e 
     
@@ -61,8 +63,8 @@ class Church (DatabaseManager):
         loan = []
         try :
             with self._connection.cursor() as cursor:
-                if before : query = f"SELECT * FROM loan WHERE church_id = \'{self.id}\' AND request_date > {before}"
-                elif after : query = f"SELECT * FROM loan WHERE church_id = \'{self.id}\' AND request_date < {after}"
+                if before : query = f"SELECT * FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date > \'{before}\'"
+                elif after : query = f"SELECT * FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date < \'{after}\'"
                 else : raise Exception("One date is atleast required")
                 cursor.execute(query)  
                 loan = [Loan().__class__(*row) for row in cursor.fetchall()]
@@ -71,7 +73,7 @@ class Church (DatabaseManager):
         except Exception as e :
             raise e
         
-    def predict_donation (self, year : int) :
+    def predict_donation (self, year : int) -> [Donation]:
         result = []
         if(year == 2024):
             donations = self.get_donations(year)
@@ -83,6 +85,7 @@ class Church (DatabaseManager):
                     temp.date = get_sunday_date(i, 2024)
                     temp.amount = temp.amount * percentage
                     result.append(temp)
+            else : result = donations
         else : 
             past_year = self.get_donations(year - 1)
             if len(past_year) != self.week_count : raise Exception("Cannot predict cause past year is no complete")
@@ -98,7 +101,7 @@ class Church (DatabaseManager):
     
     def predict_delivery_date (self, donations, amount, fund, sunday_id) :
         if (sunday_id == 52) : 
-            donations = self.predict_donation(donations[51].date.year)
+            donations = self.predict_donation(donations[51].date.year + 1)
             sunday_id = 1
             
         index = sunday_id - 1
@@ -121,5 +124,24 @@ class Church (DatabaseManager):
         if len(loan_before) > 0 :
             latest_loan = loan_before[len(loan_before) - 1]
             lateset_delivery_date = latest_loan.delivery_date
-            fund = self.get_fund(lateset_delivery_date)
+            fund = self.get_fund_at(lateset_delivery_date)
+            donations = self.predict_donation(loan.request_date.year)
+            obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(loan.request_date))
+            print(obj)
+        else :
+            donations = self.predict_donation(loan.request_date.year)
+            fund = self.get_fund_at(loan.request_date, first_time=True)
+            print(f"Fund amount : {fund.amount}")
+            obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(str(loan.request_date)))
             
+        for loan in loan_after :
+            self.handle_loan_request(self, loan)
+            
+    def save_loan_request (self, loan : Loan, obj) -> None:
+        fund = Fund(church_id=self.id, date=loan.delivery_date, amount=obj.fund)
+        fund.create()
+
+        
+        
+        loan.create()
+        return None
