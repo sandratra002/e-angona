@@ -1,8 +1,10 @@
 from database.db_manager import DatabaseManager
-from utils.utils import calculate_proportion 
+from utils.utils import calculate_proportion, get_sunday_date
 from models.donation import Donation
 from models.loan import Loan
 from models.fund import Fund
+from copy import deepcopy
+
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
     
@@ -47,7 +49,9 @@ class Church (DatabaseManager):
             with self._connection.cursor() as cursor:
                 query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
                 cursor.execute(query)  
-                donations = [Donation().__class__(*row) for row in cursor.fetchall()]
+                data = cursor.fetchall()
+                for row in data : print(row)
+                donations = [Donation().__class__(*row) for row in data]
                 assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in donation list"
                 return donations
         except Exception as e :
@@ -70,19 +74,52 @@ class Church (DatabaseManager):
     def predict_donation (self, year : int) :
         result = []
         if(year == 2024):
-            donations = self.get_donations(2024)
+            donations = self.get_donations(year)
             if(len(donations) < self.week_count) :
-                percentage = calculate_proportion(2024, 2023) 
+                percentage = self.calculate_percentage(2024, len(donations)) 
                 past_year = self.get_donations(2023)
                 for i in range (len(donations), 52) :
-                    result.append()
-        past_year = self.get_donations(year - 1)
-        if len(past_year != self.week_count) : raise Exception("Cannot predict cause past year is no complete")
+                    temp = past_year[i].__copy__()
+                    temp.date = get_sunday_date(i, 2024)
+                    temp.amount = temp.amount * percentage
+                    result.append(temp)
+        else : 
+            past_year = self.get_donations(year - 1)
+            if len(past_year) != self.week_count : raise Exception("Cannot predict cause past year is no complete")
+            percentage = self.calculate_percentage(2024, 52) 
+            print(percentage)
+            for i in range (0, 52) :
+                    temp = past_year[i].__copy__()
+                    temp.date = get_sunday_date(temp.sunday_id, year=year)
+                    temp.amount = temp.amount * percentage
+                    print(i)
+                    result.append(temp)
+        return result
+    
+    def predict_delivery_date (self, donations, amount, fund, sunday_id) :
+        if (sunday_id == 52) : 
+            donations = self.predict_donation(donations[51].date.year)
+            sunday_id = 1
+            
+        index = sunday_id - 1
+        
+        donation = donations[index]
+        temp = fund + donation.amount
+        if (temp >= amount) :
+            return {
+                "delivery_date" : get_sunday_date(sunday_id= sunday_id, year=donation.date.year),
+                 "fund" : temp - amount
+                }   
+        else :
+            fund = temp
+            sunday_id += 1
+            return self.predict_delivery_date(donations=donations, amount=amount, fund=fund, sunday_id=sunday_id)
         
     def handle_loan_request (self, loan : Loan) -> Loan:
         loan_before = self.get_loan(before=loan.request_date)
         loan_after = self.get_loan(after=loan.request_date)
         if len(loan_before) > 0 :
             latest_loan = loan_before[len(loan_before) - 1]
-            return_date = latest_loan.delivery_date
-            fund = self.get_fund(return_date)
+            lateset_delivery_date = latest_loan.delivery_date
+            fund = self.get_fund(lateset_delivery_date)
+            

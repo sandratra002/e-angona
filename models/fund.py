@@ -13,11 +13,11 @@ class Fund (DatabaseManager) :
         self.amount = amount
         
     # Getters and setters
-    @property
-    def date (self) :
-        return self.date
+    # @property
+    # def date (self) :
+    #     return self.date
     
-    @date.setter 
-    def date (self, value) :
-        self.date = datetime.strptime(value, "%Y-%m-%d")
+    # @date.setter 
+    # def date (self, value) :
+    #     self.date = datetime.strptime(value, "%Y-%m-%d")
         

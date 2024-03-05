@@ -2,15 +2,17 @@ DROP TABLE IF EXISTS
     [fund],
     [donation],
     [loan],
-    [believer]
+    [believer],
     [church],
-    [church_group];
+    [church_group],
+    [fund];
 
 DROP SEQUENCE IF EXISTS
     [fund_sequence],
     [donation_sequence],
     [loan_sequence],
-    [believer_sequence]
+    [believer_sequence],
     [church_sequence],
-    [church_group_sequence];   
+    [church_group_sequence],
+    [fund_sequence];   
 

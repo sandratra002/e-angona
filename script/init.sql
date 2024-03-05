@@ -51,8 +51,7 @@ CREATE TABLE [donation] (
     [date] DATE NOT NULL,
     [sunday_id] INT NOT NULL,
     [is_prediction] INT DEFAULT 0,
-    CHECK ([is_prediction] == 0 OR [is_prediction] == 1),
-    UNIQUE (YEAR(date), [sunday_id])
+    CHECK ([is_prediction] = 0 OR [is_prediction] = 1)
 );
 
 ALTER TABLE [donation]

@@ -20,10 +20,10 @@ class Believer(DatabaseManager) :
         return Loan(request_date=date, amount=amount, believer_id=self.id)
     
     # Getters and setters
-    @property
-    def integration_date (self) :
-        return self.integration_date
+    # @property
+    # def integration_date (self) :
+    #     return self.integration_date
     
-    @integration_date.setter 
-    def integration_date (self, value) :
-        self.integration_date = datetime.strptime(value, "%Y-%m-%d")
+    # @integration_date.setter 
+    # def integration_date (self, value) :
+    #     self.integration_date = datetime.strptime(value, "%Y-%m-%d")
