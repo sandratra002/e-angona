@@ -1,5 +1,5 @@
 import datetime
-from datetime import date
+from datetime import date, timedelta
 from calendar import day_name, monthcalendar
 from itertools import islice
 
@@ -28,3 +28,16 @@ def calculate_proportion(num1, num2):
 
 def get_first_january(year):
   return date(year, 1, 1)
+
+def get_first_sunday(year) :
+  for i in range (1, 8) :
+    temp = date(year, 1, i)
+    if temp.weekday() == 6 : return temp
+ 
+def get_sunday_date(sunday_id, year):
+  if not (1 <= sunday_id <= 52) or year < 1:
+    raise ValueError("Invalid Sunday ID or year")
+
+  first_sunday = get_first_sunday(year)
+   
+  return first_sunday + timedelta(days=(sunday_id - 1) * 7)

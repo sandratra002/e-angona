@@ -6,6 +6,8 @@ from models.fund import Fund
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
     
+    week_count = 52;
+    
     def __init__(self, id = None, name = None, church_group_id = None) -> None:
         super().__init__()
         self.id = id
@@ -66,10 +68,16 @@ class Church (DatabaseManager):
             raise e
         
     def predict_donation (self, year : int) :
+        result = []
+        if(year == 2024):
+            donations = self.get_donations(2024)
+            if(len(donations) < self.week_count) :
+                percentage = calculate_proportion(2024, 2023) 
+                past_year = self.get_donations(2023)
+                for i in range (len(donations), 52) :
+                    result.append()
         past_year = self.get_donations(year - 1)
-        if len(past_year != 52) : raise Exception("Cannot predict cause past year is no complete")
-        
-        
+        if len(past_year != self.week_count) : raise Exception("Cannot predict cause past year is no complete")
         
     def handle_loan_request (self, loan : Loan) -> Loan:
         loan_before = self.get_loan(before=loan.request_date)
