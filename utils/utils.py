@@ -1,4 +1,5 @@
 import datetime
+from datetime import date
 from calendar import day_name, monthcalendar
 from itertools import islice
 
@@ -22,6 +23,8 @@ def calculate_proportion(num1, num2):
   if num2 == 0:
     return 0  
 
-  proportion = ((num1 / num2) * 100) - 100  
+  proportion = (num1 / num2) 
   return round(proportion, 2)  
 
+def get_first_january(year):
+  return date(year, 1, 1)

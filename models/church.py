@@ -2,6 +2,7 @@ from database.db_manager import DatabaseManager
 from utils.utils import calculate_proportion 
 from models.donation import Donation
 from models.loan import Loan
+from models.fund import Fund
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
     
@@ -16,13 +17,21 @@ class Church (DatabaseManager):
         # Get fund for prediction
         try :
             with self._connection.cursor() as cursor:
-                query = f"SELECT SUM(amount) FROM Donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year} AND sunday_id < {sunday_id}"
+                query = f"SELECT SUM(amount) FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year} AND sunday_id < {sunday_id}"
                 cursor.execute(query)  
                 return cursor.fetchmany(1)[0][0]
         except Exception as e :
             raise e 
         
-    def 
+    def get_fund_at (self, date) :
+        # Get fund for a specific date
+        try :
+            with self._connection.cursor() as cursor:
+                query = f"SELECT * FROM fund WHERE church_id = \'{self.id}\' AND date = \'{date}\'"
+                cursor.execute(query)  
+                return Fund().__class__(cursor.fetchmany(1)[0][0])
+        except Exception as e :
+            raise e 
     
     def calculate_percentage(self, year : int, sunday_id) :
         past_year_fund = self.get_fund(year=year-1, sunday_id=sunday_id)
@@ -56,10 +65,14 @@ class Church (DatabaseManager):
         except Exception as e :
             raise e
         
+    def predict (self, date) -> [Donation]:
+        
+        return None
+        
     def handle_loan_request (self, loan : Loan) -> Loan:
         loan_before = self.get_loan(before=loan.request_date)
         loan_after = self.get_loan(after=loan.request_date)
         if len(loan_before) > 0 :
             latest_loan = loan_before[len(loan_before) - 1]
-            fund = self.get_fund(latest_loan.delivery_date)
             return_date = latest_loan.delivery_date
+            fund = self.get_fund(return_date)
