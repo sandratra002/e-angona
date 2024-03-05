@@ -46,7 +46,7 @@ class Church (DatabaseManager):
                 query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
                 cursor.execute(query)  
                 donations = [Donation().__class__(*row) for row in cursor.fetchall()]
-                assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in loan list"
+                assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in donation list"
                 return donations
         except Exception as e :
             raise e
@@ -65,9 +65,11 @@ class Church (DatabaseManager):
         except Exception as e :
             raise e
         
-    def predict (self, date) -> [Donation]:
+    def predict_donation (self, year : int) :
+        past_year = self.get_donations(year - 1)
+        if len(past_year != 52) : raise Exception("Cannot predict cause past year is no complete")
         
-        return None
+        
         
     def handle_loan_request (self, loan : Loan) -> Loan:
         loan_before = self.get_loan(before=loan.request_date)
