@@ -27,18 +27,19 @@ class Church (DatabaseManager):
         percentage = calculate_proportion(current_year_fund, past_year_fund)
         return percentage
     
-    def get_donations (self, year : int) :
+    def get_donations (self, year : int) -> [Donation] :
         donations = []
         try :
             with self._connection.cursor() as cursor:
                 query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
                 cursor.execute(query)  
                 donations = [Donation().__class__(*row) for row in cursor.fetchall()]
+                assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in loan list"
                 return donations
         except Exception as e :
             raise e
     
-    def get_loan(self, before = None, after = None) :
+    def get_loan(self, before = None, after = None) -> [Loan]:
         loan = []
         try :
             with self._connection.cursor() as cursor:
@@ -47,6 +48,15 @@ class Church (DatabaseManager):
                 else : raise Exception("One date is atleast required")
                 cursor.execute(query)  
                 loan = [Loan().__class__(*row) for row in cursor.fetchall()]
+                assert all(isinstance(obj, Loan) for obj in loan), "Unexpected object in loan list"
                 return loan
         except Exception as e :
             raise e
+        
+    def handle_loan_request (self, loan : Loan) -> Loan:
+        loan_before = self.get_loan(before=loan.request_date)
+        loan_after = self.get_loan(after=loan.request_date)
+        if len(loan_before) > 0 :
+            fund = self.get_fund()
+            latest_loan = loan_before[len(loan_before) - 1]
+            return_date = latest_loan.delivery_date

@@ -1,3 +1,4 @@
+from datetime import datetime
 from database.db_manager import DatabaseManager
 from models.loan import Loan
 
@@ -13,6 +14,10 @@ class Believer(DatabaseManager) :
         self.password = password
         self.integration_date = integration_date
         pass
+    
+    @property
+    def integration_date (self) :
+        return datetime.strptime(self.integration_date)
         
     def request_loan (self, date, amount) :
         return Loan(request_date=date, amount=amount, believer_id=self.id)

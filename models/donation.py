@@ -1,3 +1,4 @@
+from datetime import datetime
 from database.db_manager import DatabaseManager
 
 class Donation (DatabaseManager) :
@@ -10,3 +11,7 @@ class Donation (DatabaseManager) :
         self.amount = amount
         self.sunday_id = sunday_id
         self.date = date
+        
+    @property
+    def date (self) :
+        return datetime.strptime(self.date)
