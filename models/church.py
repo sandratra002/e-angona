@@ -1,6 +1,7 @@
 from database.db_manager import DatabaseManager
 from utils.utils import calculate_proportion 
 from models.donation import Donation
+from models.loan import Loan
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
     
@@ -30,11 +31,22 @@ class Church (DatabaseManager):
         donations = []
         try :
             with self._connection.cursor() as cursor:
-                query = f"SELECT * FROM Donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
+                query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
                 cursor.execute(query)  
                 donations = [Donation().__class__(*row) for row in cursor.fetchall()]
                 return donations
         except Exception as e :
             raise e
     
-    
+    def get_loan(self, before = None, after = None) :
+        loan = []
+        try :
+            with self._connection.cursor() as cursor:
+                if before : query = f"SELECT * FROM loan WHERE church_id = \'{self.id}\' AND request_date > {before}"
+                elif after : query = f"SELECT * FROM loan WHERE church_id = \'{self.id}\' AND request_date < {after}"
+                else : raise Exception("One date is atleast required")
+                cursor.execute(query)  
+                loan = [Loan().__class__(*row) for row in cursor.fetchall()]
+                return loan
+        except Exception as e :
+            raise e
