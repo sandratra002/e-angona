@@ -14,6 +14,10 @@ def get_sunday_id_int(date):
   if(date.weekday() != 6) : raise Exception("The date is not sunday")
   return date.isocalendar().week
 
+def get_week_day_id (date) :
+    date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+    return date.isocalendar().week
+
 def calculate_proportion(num1, num2):
   if num2 == 0:
     return 0  

@@ -13,6 +13,7 @@ class Church (DatabaseManager):
         pass
         
     def get_fund(self, year : int, sunday_id : int) -> float:
+        # Get fund for prediction
         try :
             with self._connection.cursor() as cursor:
                 query = f"SELECT SUM(amount) FROM Donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year} AND sunday_id < {sunday_id}"
@@ -21,6 +22,8 @@ class Church (DatabaseManager):
         except Exception as e :
             raise e 
         
+    def 
+    
     def calculate_percentage(self, year : int, sunday_id) :
         past_year_fund = self.get_fund(year=year-1, sunday_id=sunday_id)
         current_year_fund = self.get_fund(year=year, sunday_id=sunday_id)
@@ -57,6 +60,6 @@ class Church (DatabaseManager):
         loan_before = self.get_loan(before=loan.request_date)
         loan_after = self.get_loan(after=loan.request_date)
         if len(loan_before) > 0 :
-            fund = self.get_fund()
             latest_loan = loan_before[len(loan_before) - 1]
+            fund = self.get_fund(latest_loan.delivery_date)
             return_date = latest_loan.delivery_date
