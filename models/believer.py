@@ -13,6 +13,14 @@ class Believer(DatabaseManager) :
         self.first_name = first_name
         self.password = password
         self.integration_date = integration_date
+        self.__dict__ = {
+            "id" : self.id,
+            "church_id" : self.church_id,
+            "name" : self.name,
+            "first_name" : self.first_name,
+            "password" : self.password,
+            "integration_date" : str(self.integration_date),
+        }
         pass
     
     # Class methods

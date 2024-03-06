@@ -6,6 +6,12 @@
     <title>e-angona</title>
 </head>
 <body>
+    {% if user %}
+        <h2>Believer</h2>
+        <p>Id : {{ user["id"] }}</p>
+        <p>Name : {{ user["name"] }}</p>
+        <p>FirstName : {{ user["first_name"] }}</p>
+    {% endif %}
     <a href="login-form">Login</a>
     <a href="donation">Donation</a>
 </body>
