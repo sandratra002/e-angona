@@ -10,10 +10,12 @@ app = Flask(__name__, static_folder = "assets")
 
 @app.route('/')
 def index():
-    return "Hello World"
+    return render_template("index.html")
 
-@app.route('/login-forom')
+@app.route('/login-form')
 def login_form():
-    return render_template("")
+    return render_template("login.html")
     
+    
+
 app.run()
