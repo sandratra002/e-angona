@@ -31,7 +31,7 @@ ON DELETE CASCADE;
 CREATE TABLE [loan] (
     [id] nvarchar(10) PRIMARY KEY DEFAULT (N'LOA' + RIGHT(REPLICATE(N'0', 4) + CONVERT(nvarchar(10), NEXT VALUE FOR [loan_sequence]), 4)),
     [believer_id] nvarchar(10),
-    [request_date] DATE NOT NULL DEFAULT CAST(GETDATE() AS date),
+    [request_date] DATETIME NOT NULL DEFAULT CAST(GETDATE() AS date),
     [delivery_date] DATE NOT NULL,
     [repay_date] DATE DEFAULT NULL,
     [amount] DECIMAL(10, 2),

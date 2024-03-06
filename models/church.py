@@ -32,9 +32,13 @@ class Church (DatabaseManager):
             with self._connection.cursor() as cursor:
                 if not first_time : query = f"SELECT * FROM fund WHERE church_id = \'{self.id}\' AND date = \'{date}\'"
                 else : query = f"SELECT SUM(amount) FROM donation WHERE church_id = \'{self.id}\' AND date <= \'{date}\' AND YEAR(date) = {date.year}"
+                print(query)
                 cursor.execute(query)  
                 if not first_time :
-                    return Fund().__class__(cursor.fetchmany(1)[0][0])
+                    row = cursor.fetchone()
+                    fund = Fund(*row)
+                    print(fund.amount)
+                    return fund
                 else : return Fund(amount=cursor.fetchone()[0])
         except Exception as e :
             raise e 
@@ -52,7 +56,6 @@ class Church (DatabaseManager):
                 query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
                 cursor.execute(query)  
                 data = cursor.fetchall()
-                for row in data : print(row)
                 donations = [Donation().__class__(*row) for row in data]
                 assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in donation list"
                 return donations
@@ -63,9 +66,12 @@ class Church (DatabaseManager):
         loan = []
         try :
             with self._connection.cursor() as cursor:
-                if before : query = f"SELECT * FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date > \'{before}\'"
-                elif after : query = f"SELECT * FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date < \'{after}\'"
+                if before : query = f"SELECT id, believer_id, amount, request_date, delivery_date, repay_date FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date < \'{before}\'"
+                
+                elif after : query = f"SELECT id, believer_id, amount, request_date, delivery_date, repay_date FROM v_loan_church WHERE church_id = \'{self.id}\' AND request_date > \'{after}\'"
+                
                 else : raise Exception("One date is atleast required")
+                
                 cursor.execute(query)  
                 loan = [Loan().__class__(*row) for row in cursor.fetchall()]
                 assert all(isinstance(obj, Loan) for obj in loan), "Unexpected object in loan list"
@@ -90,12 +96,10 @@ class Church (DatabaseManager):
             past_year = self.get_donations(year - 1)
             if len(past_year) != self.week_count : raise Exception("Cannot predict cause past year is no complete")
             percentage = self.calculate_percentage(2024, 52) 
-            print(percentage)
             for i in range (0, 52) :
                     temp = past_year[i].__copy__()
                     temp.date = get_sunday_date(temp.sunday_id, year=year)
                     temp.amount = temp.amount * percentage
-                    print(i)
                     result.append(temp)
         return result
     
@@ -124,24 +128,30 @@ class Church (DatabaseManager):
         if len(loan_before) > 0 :
             latest_loan = loan_before[len(loan_before) - 1]
             lateset_delivery_date = latest_loan.delivery_date
+            
             fund = self.get_fund_at(lateset_delivery_date)
             donations = self.predict_donation(loan.request_date.year)
-            obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(loan.request_date))
+            
+            obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(str(loan.request_date)))
             print(obj)
+            
+            self.save_loan_request(loan=loan, obj=obj)
         else :
             donations = self.predict_donation(loan.request_date.year)
             fund = self.get_fund_at(loan.request_date, first_time=True)
+            
             print(f"Fund amount : {fund.amount}")
             obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(str(loan.request_date)))
+            print(obj)
+            self.save_loan_request(loan=loan, obj=obj)
             
-        for loan in loan_after :
-            self.handle_loan_request(self, loan)
+        for temp in loan_after :
+            self.handle_loan_request(temp)
             
     def save_loan_request (self, loan : Loan, obj) -> None:
-        fund = Fund(church_id=self.id, date=loan.delivery_date, amount=obj.fund)
-        fund.create()
-
-        
-        
+        loan.delivery_date = obj["delivery_date"]
         loan.create()
+        
+        fund = Fund(church_id=self.id, date=loan.delivery_date, amount=obj["fund"])
+        fund.create()
         return None

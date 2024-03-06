@@ -6,7 +6,7 @@ class Loan (DatabaseManager) :
 
     def __init__(self, id = None, believer_id = None, amount = None, 
                  request_date = None, delivery_date = None, repay_date = None) -> None:
-        super().__init__()
+        super().__init__()  
         self.id = id
         self.believer_id = believer_id
         self.amount = amount
