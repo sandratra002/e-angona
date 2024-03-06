@@ -14,22 +14,12 @@
     <div class="form-container enabled">
         <div class="form-wrapper">
             <form action="donation" class="form enabled" method="post" id="login-form">
-                <h1 class="form__title">New Donation</h1>
+                <h1 class="form__title">New Prediction</h1>
     
                 <hr class="form__sep">
     
                 <div class="form__content">
-                    <div class="form__input vertical">
-                        <label for="church" class="form__label">Church:</label>
-                        
-                        <select name="church_id" id="church_id" class="form__input-field" required>
-                            <option value=""></option>
-                            {% for church in churches %}
-                                <option value="{{church.id}}">{{church.name}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-    
+
                     <div class="form__input vertical">
                         <label for="amount" class="form__label">Amount:</label>
     
@@ -37,9 +27,9 @@
                     </div>
 
                     <div class="form__input vertical">
-                        <label for="date" class="form__label">Date:</label>
+                        <label for="request_date" class="form__label">Request Date :</label>
     
-                        <input type="date" name="date" id="date" class="form__input-field" value="" placeholder=""/>
+                        <input type="date" name="request_date" id="request_date" class="form__input-field" value="" placeholder=""/>
                     </div>
                 </div>
     

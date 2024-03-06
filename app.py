@@ -1,8 +1,11 @@
 from models.church import Church
-from models.believer import Believer
+from models.donation import Donation
+
 from utils.utils import get_sunday_id_int as ids, get_sunday_date
+
 import datetime as dt
 from datetime import datetime
+
 from models.auth import Authentication
 from flask import Flask, render_template, request, redirect, session
 import json
@@ -40,9 +43,19 @@ def login():
         return redirect("/")
 
 @app.route('/donation-form')
+def donation_form():
+    churches = Church().read()
+    return render_template("donation.html", churches = churches)
+
+@app.route('/donation', methods = ['POST'])
 def donation():
-    
-    pass
+    church_id = request.form['church_id']
+    amount = float(request.form['amount'])
+    date = request.form['date']
+    sunday_id = ids(date=date)
+    donation = Donation(church_id=church_id, amount=amount, date=date, sunday_id=sunday_id, is_prediction= 0)
+    donation.create()
+    return redirect("/")
 
 # app.run()
 app.run(debug=True)
