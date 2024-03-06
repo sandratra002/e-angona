@@ -5,7 +5,7 @@ from models.loan import Loan
 class Believer(DatabaseManager) :
     id : str; name : str; church_id : str; first_name : str; password : str
     
-    def __init__(self, id = None, name = None, church_id = None,first_name = None, password = None, integration_date = None) :
+    def __init__(self, id = None, church_id = None, name = None, first_name = None, password = None, integration_date = None) :
         super().__init__()
         self.id = id
         self.name = name
