@@ -43,19 +43,6 @@ ADD CONSTRAINT [loan_believer_fk_check] FOREIGN KEY ([believer_id])
 REFERENCES [believer]([id])
 ON DELETE CASCADE;
 
-CREATE OR REPLACE VIEW v_loan_church AS (
-    SELECT
-        l.id [id], 
-        l.believer_id [believer_id],
-        l.amount [amount],
-        l.request_date [request_date],
-        l.delivery_date [delivery_date],
-        l.repay_date [repay_date],
-        b.church_id [church_id]
-    FROM Loan l
-    JOIN believer b ON b.id = l.believer_id
-);
-
 CREATE TABLE [donation] (
     [id] nvarchar(10) PRIMARY KEY DEFAULT (N'DON' + RIGHT(REPLICATE(N'0', 4) + CONVERT(nvarchar(10), NEXT VALUE FOR [donation_sequence]), 4)),
     [church_id] nvarchar(10),

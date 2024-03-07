@@ -1,3 +1,16 @@
+CREATE VIEW v_loan_church AS (
+    SELECT
+        l.id [id], 
+        l.believer_id [believer_id],
+        l.amount [amount],
+        l.request_date [request_date],
+        l.delivery_date [delivery_date],
+        l.repay_date [repay_date],
+        b.church_id [church_id]
+    FROM Loan l
+    JOIN believer b ON b.id = l.believer_id
+);
+
 INSERT INTO [church_group] (name) VALUES
     ('Group 1');
 

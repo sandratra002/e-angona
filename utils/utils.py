@@ -15,7 +15,8 @@ def get_sunday_id_int(date):
   if(date.weekday() != 6) : raise Exception("The date is not sunday")
   return date.isocalendar().week
 
-def get_week_day_id (date) :
+def get_week_day_id (date : date) :
+    date = date.split(" ")[0]
     date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
     return date.isocalendar().week
 
@@ -41,3 +42,11 @@ def get_sunday_date(sunday_id, year):
   first_sunday = get_first_sunday(year)
    
   return first_sunday + timedelta(days=(sunday_id - 1) * 7)
+
+def to_datetime (date : str) :
+  print(date)
+  cal = date.split("T")[0]
+  hour = date.split("T")[1]
+  hour += ":00"
+  print(f"Changed valueeee {cal + " " + hour}")
+  return cal + " " + hour

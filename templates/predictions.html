@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-angona | Loans</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+</head>
+<style>
+    .container{
+        text-align: center;
+        padding: 5rem;
+    }
+</style>
+<body>
+    <div class="container">
+        <h1>Loans predictions</h1>
+        <table>
+            <tr>
+                <th>Id</th>
+                <th>Believer id</th>
+                <th>Request Date</th>
+                <th>Delivery Date</th>
+                <th>Repay Date</th>
+                <th>Amount</th>
+            </tr>
+            {% for loan in loans %} 
+                <tr>
+                    <td>{{loan.id}}</td>
+                    <td>{{loan.believer_id}}</td>
+                    <td>{{loan.request_date}}</td>
+                    <td>{{loan.delivery_date}}</td>
+                    <td>{{loan.repay_date}}</td>
+                    <td>{{loan.amount}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
