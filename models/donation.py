@@ -40,31 +40,50 @@ class Donation (DatabaseManager) :
         except Exception as e :
             raise e
         
-    def get_variation (self, year, sunday_id : int) :
+    def get_variation (self, year : int, sunday_id : int) :
         try :
             with self._connection.cursor() as cursor:
                 query = self.get_query(year=year, sunday_id=sunday_id)
                 cursor.execute(query)  
-                print(query)
                 data = cursor.fetchone()
-                print(data)
+                return data[0]
+        except Exception as e :
+            raise e
+
+    def get_average (self, year : int, sunday_id : int) :
+        try :
+            with self._connection.cursor() as cursor:
+                query = f"""
+                    SELECT 
+                        AVG([amount]) AS average ,
+                        [church_id] , 
+                        [sunday_id]
+                    FROM [Donation] 
+                    WHERE YEAR([date]) < {year} AND [sunday_id] = \'{sunday_id}\'
+                    GROUP BY [church_id],[sunday_id]
+                """
+                print(query)    
+            
+                cursor.execute(query)  
+                data = cursor.fetchone()
+                return data[0]
         except Exception as e :
             raise e
 
     def get_query(self, year, sunday_id):
         query = f"""
-            SELECT s.[average] * AVG(variation) as [value] FROM 
+            SELECT AVG(variation) as [value] FROM 
             (
                 SELECT 
                     [church_id] , 
                     [sunday_id], 
                     AVG([amount]) AS average 
                 FROM [Donation] 
-                WHERE YEAR([date]) < {year} AND [sunday_id] = 6
+                WHERE YEAR([date]) < {year} AND [sunday_id] = {sunday_id}
                 GROUP BY [church_id],[sunday_id]
             ) AS s , 
             (
-                SELECT m.*,( m.[average] / o.[amount] ) AS [variation]
+                SELECT m.*,(o.[amount] / m.[average]) AS [variation]
                     FROM(
                         SELECT 
                             [church_id], 

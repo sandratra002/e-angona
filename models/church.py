@@ -1,9 +1,9 @@
 from database.db_manager import DatabaseManager
-from utils.utils import calculate_proportion, get_sunday_date, get_sunday_id_int, get_week_day_id
+from utils.utils import calculate_proportion, get_sunday_date, get_sunday_id_int, get_week_day_id, get_next_sunday
 from models.donation import Donation
 from models.loan import Loan
 from models.fund import Fund
-from datetime import date
+from datetime import date, timedelta
 
 class Church (DatabaseManager):
     id : str; name : str; church_group_id : str;
@@ -139,3 +139,42 @@ class Church (DatabaseManager):
         fund = Fund(church_id=self.id, date=loan.delivery_date, amount=obj["fund"])
         fund.create()
         return None
+    
+    def predict_date (self, loan : Loan) :
+        donation = Donation()
+        last_fund = Fund().get_last_fund()
+        
+        sunday = get_next_sunday(loan.request_date)
+        id = get_sunday_id_int(sunday.strftime("%Y-%m-%d %H:%M:%S"))
+        avg = donation.get_average(year=loan.request_date.year, sunday_id=id)
+        
+        variation = donation.get_variation(year=loan.request_date.year, sunday_id=id)
+        average = donation.get_average(loan.request_date.year, id)
+        
+        print(f"Variation :: {variation}")
+        print(f"Average :: {average}")
+        
+        if (not last_fund) :
+            amount = variation * average
+            print(f"Amount :: {amount}")
+            last_fund = Fund()
+            last_fund.amount = amount
+            last_fund.date = sunday
+            last_fund.church_id = self.id
+            last_fund.create()
+            
+        temp_fund = last_fund.amount
+        while ( temp_fund < loan.amount ):
+            average = donation.get_average(year=loan.request_date.year, sunday_id=id + 1)
+            amount = average * variation
+            
+            temp_fund += amount
+            sunday = sunday + timedelta(7)
+        
+        loan.delivery_date = sunday
+        loan.create()
+        
+        new_fund = Fund(church_id=self.id, date=sunday, amount=temp_fund)
+        new_fund.create()
+        
+        return loan

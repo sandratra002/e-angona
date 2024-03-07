@@ -12,12 +12,16 @@ class Fund (DatabaseManager) :
         self.date = date
         self.amount = amount
         
-    # Getters and setters
-    # @property
-    # def date (self) :
-    #     return self.date
-    
-    # @date.setter 
-    # def date (self, value) :
-    #     self.date = datetime.strptime(value, "%Y-%m-%d")
+    def get_last_fund (self) :
+        try:
+            with self._connection.cursor() as cursor:
+                table_name = self.get_table_name() 
+                sql = f"SELECT TOP 1 * FROM {table_name} ORDER BY date"
+                cursor.execute(sql)
+
+                data = [self.__class__(*row) for row in cursor.fetchall()]
+            if len(data) > 0 : return data[0] 
+        except Exception as e:
+            raise e
+    # Getters and setter
         

@@ -11,7 +11,7 @@ def sum(data, field_name):
   return total
 
 def get_sunday_id_int(date):
-  date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+  date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S").date()
   if(date.weekday() != 6) : raise Exception("The date is not sunday")
   return date.isocalendar().week
 
@@ -50,3 +50,8 @@ def to_datetime (date : str) :
   hour += ":00"
   print(f"Changed valueeee {cal + " " + hour}")
   return cal + " " + hour
+
+def get_next_sunday(dt):
+  while (dt.weekday() != 6) :
+    dt = dt + timedelta(days=1)
+  return dt
