@@ -15,15 +15,70 @@ class Donation (DatabaseManager) :
         
     def __copy__ (self) :
         return Donation(self.id, church_id=self.church_id, amount=self.amount, date=self.date, sunday_id=self.sunday_id, is_prediction=self.is_prediction)
-    # @property
-    # def date (self) :
-    #     return self.date
     
-    # @date.setter 
-    # def date (self, value) :
-    #     if (not value == None) :
-    #         if (isinstance(value, str)) :
-    #             self.date = datetime.strptime(value, "%Y-%m-%d")
-    #         if (isinstance(value, date)) :
-    #             self.date = value
+    def get_donations (self, year : int, church_id : str) :
+        donations = []
+        try :
+            with self._connection.cursor() as cursor:
+                query = f"SELECT * FROM donation WHERE church_id = \'{church_id}\' AND YEAR(date) = {year}"
+                cursor.execute(query)  
+                data = cursor.fetchall()
+                donations = [Donation().__class__(*row) for row in data]
+                assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in donation list"
+                return donations
+        except Exception as e :
+            raise e
+        
+    def get_donation_by_sunday (self, year : int, church_id : str, sunday_id : int) :
+        try :
+            with self._connection.cursor() as cursor:
+                query = f"SELECT * FROM donation WHERE church_id = \'{church_id}\' AND YEAR(date) = {year} AND sunday_id = {sunday_id}"
+                cursor.execute(query)  
+                data = cursor.fetchone()
+                donation = Donation().__class__(*data)
+                return donation
+        except Exception as e :
+            raise e
+        
+    def get_variation (self, year, sunday_id : int) :
+        try :
+            with self._connection.cursor() as cursor:
+                query = self.get_query(year=year, sunday_id=sunday_id)
+                cursor.execute(query)  
+                print(query)
+                data = cursor.fetchone()
+                print(data)
+        except Exception as e :
+            raise e
+
+    def get_query(self, year, sunday_id):
+        query = f"""
+            SELECT s.[average] * AVG(variation) as [value] FROM 
+            (
+                SELECT 
+                    [church_id] , 
+                    [sunday_id], 
+                    AVG([amount]) AS average 
+                FROM [Donation] 
+                WHERE YEAR([date]) < {year} AND [sunday_id] = 6
+                GROUP BY [church_id],[sunday_id]
+            ) AS s , 
+            (
+                SELECT m.*,( m.[average] / o.[amount] ) AS [variation]
+                    FROM(
+                        SELECT 
+                            [church_id], 
+                            [sunday_id], 
+                            AVG([amount]) AS [average] 
+                        FROM [Donation] 
+                        WHERE YEAR([date]) < 2024
+                        GROUP BY [church_id], [sunday_id]  
+                    ) AS m 
+                    JOIN [Donation] AS o 
+                    ON m.[church_id] = o.[church_id] AND m.[sunday_id]=o.[sunday_id] 
+                    WHERE YEAR([date]) = {year} AND o.[sunday_id] < {sunday_id}
+                ) AS mv
+            GROUP BY s.average
+        """
+        return query
         

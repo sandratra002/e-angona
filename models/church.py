@@ -48,28 +48,17 @@ class Church (DatabaseManager):
         current_year_fund = self.get_fund(year=year, sunday_id=sunday_id)
         percentage = calculate_proportion(current_year_fund, past_year_fund)
         return percentage
-    
-    def get_donations (self, year : int) -> [Donation] :
-        donations = []
-        try :
-            with self._connection.cursor() as cursor:
-                query = f"SELECT * FROM donation WHERE church_id = \'{self.id}\' AND YEAR(date) = {year}"
-                cursor.execute(query)  
-                data = cursor.fetchall()
-                donations = [Donation().__class__(*row) for row in data]
-                assert all(isinstance(obj, Donation) for obj in donations), "Unexpected object in donation list"
-                return donations
-        except Exception as e :
-            raise e
         
     def predict_donation (self, year : int) -> [Donation]:
         result = []
+        donation = Donation()
         if(year == 2024):
-            donations = self.get_donations(year)
+            donations = donation.get_donations(year=year, church_id=self.id)
+            print("Donations lengthhh 57 : " , len(donations))
             if(len(donations) < self.week_count) :
                 result = [*donations]
                 percentage = self.calculate_percentage(2024, len(donations)) 
-                past_year = self.get_donations(2023)
+                past_year = donation.get_donations(year=2023, church_id=self.id)
                 for i in range (len(donations), 52) :
                     temp = past_year[i].__copy__()
                     temp.date = get_sunday_date(i, 2024)
@@ -78,7 +67,7 @@ class Church (DatabaseManager):
                     result.append(temp)
             else : result = donations
         else : 
-            past_year = self.get_donations(year - 1)
+            past_year = donation.get_donations(year=year - 1, church_id=self.id)
             if len(past_year) >= self.week_count : raise Exception("Cannot predict cause past year is no complete")
             percentage = self.calculate_percentage(2024, 52) 
             for i in range (0, 52) :
@@ -111,7 +100,7 @@ class Church (DatabaseManager):
             sunday_id += 1
             return self.predict_delivery_date(donations=donations, amount=amount, fund=fund, sunday_id=sunday_id)
         
-    def handle_loan_request (self, loan : Loan) -> Loan:
+    def handle_loan_request (self, loan : Loan, is_first = True) -> Loan:
         loan_before = loan.get_loan(church_id=self.id, before=True)
         loan_after = loan.get_loan(church_id=self.id, after=True)
         if len(loan_before) > 0 :
@@ -125,7 +114,7 @@ class Church (DatabaseManager):
 
             loan.delivery_date = obj["delivery_date"]
             
-            self.save_loan_request(loan=loan, obj=obj)
+            self.save_loan_request(loan=loan, obj=obj, is_first=is_first)
         else :
             
             donations = self.predict_donation(loan.request_date.year)
@@ -134,15 +123,18 @@ class Church (DatabaseManager):
             
             obj = self.predict_delivery_date(donations=donations, amount=loan.amount, fund=fund.amount, sunday_id=get_week_day_id(str(loan.request_date)))
 
-            self.save_loan_request(loan=loan, obj=obj)
+            self.save_loan_request(loan=loan, obj=obj, is_first = is_first)
             
-        for temp in loan_after :
-            temp.delete()
-            self.handle_loan_request(temp)
+        if(is_first):
+            for temp in loan_after :
+                self.handle_loan_request(temp, is_first=False)
             
-    def save_loan_request (self, loan : Loan, obj) -> None:
+    def save_loan_request (self, loan : Loan, obj, is_first : bool = True) -> None:
         loan.delivery_date = obj["delivery_date"]
-        loan.create()
+        if(is_first) :
+            loan.create()
+        else : 
+            loan.update()
         
         fund = Fund(church_id=self.id, date=loan.delivery_date, amount=obj["fund"])
         fund.create()

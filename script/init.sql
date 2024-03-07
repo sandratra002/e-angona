@@ -71,3 +71,30 @@ ALTER TABLE [fund]
 ADD CONSTRAINT [fund_church_fk_check] FOREIGN KEY ([church_id])
 REFERENCES [church]([id])
 ON DELETE CASCADE;
+
+SELECT s.[average] * AVG(variation) as [value] FROM 
+    (
+        SELECT 
+            [church_id] , 
+            [sunday_id], 
+            AVG([amount]) AS average 
+        FROM [Donation] 
+        WHERE YEAR([date]) < 2024 AND [sunday_id] = 6
+        GROUP BY [church_id],[sunday_id]
+    ) AS s , 
+    (
+        SELECT m.*,(m.[average]/o.[amount])  AS [variation]
+            FROM(
+                SELECT 
+                    [church_id], 
+                    [sunday_id], 
+                    AVG([amount]) AS [average] 
+                FROM [Donation] 
+                WHERE YEAR([date]) < 2024
+                GROUP BY [church_id], [sunday_id]  
+            ) AS m 
+            JOIN [Donation] AS o 
+            ON m.[church_id] = o.[church_id] AND m.[sunday_id]=o.[sunday_id] 
+            WHERE YEAR([date]) = 2023 AND o.[sunday_id] < 6
+        ) AS mv
+GROUP BY s.average;

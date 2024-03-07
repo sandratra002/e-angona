@@ -21,7 +21,6 @@ class Believer(DatabaseManager) :
             "password" : self.password,
             "integration_date" : str(self.integration_date),
         }
-        pass
     
     # Class methods
     def request_loan (self, date, amount) :
